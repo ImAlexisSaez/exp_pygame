@@ -32,6 +32,8 @@ class Tile(pygame.sprite.Sprite):
             draw_x = TILESIZE / 2 - self.font_size[0] / 2
             draw_y = TILESIZE / 2 - self.font_size[1] / 2
             self.image.blit(font_surface, (draw_x, draw_y))
+        else:
+            self.image.fill(BGCOLOR) # La baldosa vacía es del color del fondo.
     
     def update(self):
         # Pasamos los índices y al multiplicar por TILESIZE tendremos
@@ -42,3 +44,17 @@ class Tile(pygame.sprite.Sprite):
     def click(self, mouse_x, mouse_y):
         # Comprueba si hacemos click en una baldosa
         return self.rect.left <= mouse_x <= self.rect.right and self.rect.top <= mouse_y <= self.rect.bottom
+    
+    # Funciones que evalúan si al hacer clic en una baldosa, las que se ubican
+    #  a izquierda, derecha, arriba y abajo están dentro de la rejilla.
+    def right(self):
+        return self.rect.x + TILESIZE < GAME_SIZE * TILESIZE
+
+    def left(self):
+        return self.rect.x - TILESIZE >= 0
+
+    def up(self):
+        return self.rect.y - TILESIZE >= 0
+
+    def down(self):
+        return self.rect.y + TILESIZE < GAME_SIZE * TILESIZE

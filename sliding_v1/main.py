@@ -63,6 +63,9 @@ class Game:
 
         # Para comprobar si se gana la partida
         self.tiles_grid_completed = self.create_game()
+    
+        # Dibujamos las baldosas:
+        self.draw_tiles()
 
     def run(self):
         self.playing = True # Bandera para controlar si acaba el juego.
@@ -97,10 +100,7 @@ class Game:
 
         # Dibujamos la rejilla que contiene los números
         self.draw_grid()
-
-        # Dibujamos las baldosas:
-        self.draw_tiles()
-
+        
         # Un vez hemos terminado de dibujar, debemos llamar esta función:
         pygame.display.flip()
 
@@ -110,6 +110,29 @@ class Game:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit(0)
+            
+            # Si hacemos clic:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Tomamos la posición del clic:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+
+                for row, tiles in enumerate(self.tiles):
+                    for col, tile in enumerate(tiles):
+                        if tile.click(mouse_x, mouse_y):
+                            # Comprobamos si hay una baldosa en la rejilla a la derecha
+                            #  y si esa baldosa es 0 (la vacía), las intercambiamos.
+                            if tile.right() and self.tiles_grid[row][col + 1] == 0:
+                                self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
+                            if tile.left() and self.tiles_grid[row][col - 1] == 0:
+                                self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
+                            if tile.up() and self.tiles_grid[row - 1][col] == 0:
+                                self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
+                            if tile.down() and self.tiles_grid[row + 1][col] == 0:
+                                self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
+                            # Acabadas las comprobaciones, dibujamos la rejilla de nuevi
+                            self.draw_tiles()
+
+            
 
 
 # Creamos una instancia del juego
