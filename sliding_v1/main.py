@@ -23,8 +23,18 @@ class Game:
         # Variable para controlar el estado del juego
         #  Cuando bajaremos pasará a True
         self.start_game = False
-        self.start_timer = 0
+        self.start_timer = False
         self.elapsed_time = 0
+        self.high_score = float(self.get_high_score()[0])
+    
+    def get_high_score(self):
+        with open("sliding_v1/high_score.txt", "r") as file:
+            scores = file.read().splitlines()
+        return scores
+    
+    def save_score(self):
+        with open("sliding_v1/high_score.txt", "w") as file:
+            file.write(str("%.3f\n" % self.high_score))
     
     def create_game(self):
         # Crea el juego propiamente dicho y es la condición de ganar partida también.
@@ -123,6 +133,12 @@ class Game:
         # Dibujamos las baldosas:
         self.draw_tiles()
 
+        # Resetamos algunas variables cada juego nuevo:
+        #  sobrettodo por si pulsamos el botón reset
+        self.elapsed_time = 0
+        self.start_game = False
+        self.start_game = False
+
         # Textos del juego:
         
 
@@ -144,9 +160,21 @@ class Game:
             self.draw()
 
     def update(self):
-        # Actualizamos los sprites
-        self.all_sprites.update()
-        
+        if self.start_game:
+            if self.tiles_grid == self.tiles_grid_completed:
+                self.start_game = False
+                if self.high_score > 0:
+                    self.high_score = self.elapsed_time if self.elapsed_time < self.high_score else self.high_score
+                else:
+                    self.high_score = self.elapsed_time
+                self.save_score()
+
+            if self.start_timer:
+                self.timer = time.time()
+                self.start_timer = False
+            
+            self.elapsed_time = time.time() - self.timer
+                
         # Barajamos
         if self.start_shuffle:
             self.shuffle()
@@ -154,6 +182,11 @@ class Game:
             self.shuffle_time += 1
             if self.shuffle_time > 120: # Como los FPS son 60, son 2 segundos.
                 self.start_shuffle = False
+                self.start_game = True
+                self.start_timer = True
+        
+        # Actualizamos los sprites
+        self.all_sprites.update()
 
 
     def draw_grid(self):
@@ -175,7 +208,8 @@ class Game:
         self.draw_grid()
 
         # Dibujamos los textos del juego:
-        
+        UIElement(825, 35, "%.3f" % self.elapsed_time).draw(self.screen)
+        UIElement(710, 380, "High score: %.3f" % self.high_score).draw(self.screen)
 
         # Dibujamos los botones del juego:
         for button in self.buttons_list:
