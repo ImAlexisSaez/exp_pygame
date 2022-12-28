@@ -16,6 +16,9 @@ class Game:
         pygame.display.set_caption(TITLE)
         # Reloj:
         self.clock = pygame.time.Clock()
+        # Variables para el barajado de baldosas
+        self.shuffle_time = 0
+        self.start_shuffle = False
     
     def create_game(self):
         # Crea el juego propiamente dicho y es la condición de ganar partida también.
@@ -67,6 +70,14 @@ class Game:
         # Dibujamos las baldosas:
         self.draw_tiles()
 
+        # Textos del juego:
+        
+
+        # Botones del juego
+        self.buttons_list = []
+        self.buttons_list.append(Button(775, 100, 200, 50, "Shuffle", WHITE, BLACK))
+        self.buttons_list.append(Button(775, 170, 200, 50, "Reset", WHITE, BLACK))
+
     def run(self):
         self.playing = True # Bandera para controlar si acaba el juego.
         while self.playing:
@@ -100,6 +111,13 @@ class Game:
 
         # Dibujamos la rejilla que contiene los números
         self.draw_grid()
+
+        # Dibujamos los textos del juego:
+        
+
+        # Dibujamos los botones del juego:
+        for button in self.buttons_list:
+            button.draw(self.screen)
         
         # Un vez hemos terminado de dibujar, debemos llamar esta función:
         pygame.display.flip()
@@ -131,6 +149,17 @@ class Game:
                                 self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
                             # Acabadas las comprobaciones, dibujamos la rejilla de nuevi
                             self.draw_tiles()
+
+                # Comprobamos si pulsamos los botones
+                for button in self.buttons_list:
+                    if button.click(mouse_x, mouse_y):
+                        if button.text == "Shuffle":
+                            # Resetamos el temporizador al barajar
+                            # Moveremos baldosas por 5 segundos
+                            self.shuffle_time = 0
+                            self.start_shuffle = True
+                        if button.text == "Reset":
+                            self.new()
 
             
 
