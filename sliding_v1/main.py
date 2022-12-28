@@ -19,6 +19,12 @@ class Game:
         # Variables para el barajado de baldosas
         self.shuffle_time = 0
         self.start_shuffle = False
+        self.previous_choice = ''
+        # Variable para controlar el estado del juego
+        #  Cuando bajaremos pasará a True
+        self.start_game = False
+        self.start_timer = 0
+        self.elapsed_time = 0
     
     def create_game(self):
         # Crea el juego propiamente dicho y es la condición de ganar partida también.
@@ -42,6 +48,53 @@ class Game:
         grid[-1][-1] = 0  # Cambiamos el último número por un 0.
 
         return grid
+    
+    def shuffle(self):
+        # Busca la baldosa vacía, mira las que tiene al lado dentro de la rejilla,
+        #  escoge una al azar y la intercambia (como si jugara al azar el pc).
+        possible_moves = []
+        for row, tiles in enumerate(self.tiles):
+            for col, tile in enumerate(tiles):
+                if tile.text == 'empty':
+                    if tile.right():
+                        possible_moves.append("right")
+                    # No hacer elif, pues hay varias posibilidades y hay que comprobarlas todas
+                    if tile.left():
+                        possible_moves.append("left")
+                    if tile.up():
+                        possible_moves.append("up")
+                    if tile.down():
+                        possible_moves.append("down")
+                    break
+            # Si hay movimientos posibles, dejamos de recorrer bucles
+            if len(possible_moves) > 0:
+                break
+        
+        # Además, queremos controlar que si fue hacia la derecha, en el siquiente movimiento
+        #  no vaya hacia la izquierda (estaría volviendo entonces la rejilla a la misma
+        #  posición en la que estaba).
+        if self.previous_choice == 'right':
+            possible_moves.remove('left') if 'left' in possible_moves else possible_moves
+        elif self.previous_choice == 'left':
+            possible_moves.remove('right') if 'right' in possible_moves else possible_moves
+        elif self.previous_choice == 'up':
+            possible_moves.remove('down') if 'down' in possible_moves else possible_moves
+        elif self.previous_choice == 'down':
+            possible_moves.remove('up') if 'up' in possible_moves else possible_moves
+        
+        
+        choice = random.choice(possible_moves)
+        self.previous_choice = choice
+        if choice == 'right':
+            self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
+        elif choice == 'left':
+            self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
+        elif choice == 'up':
+            self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
+        elif choice == 'down':
+            self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
+
+
 
     def draw_tiles(self):
         self.tiles = []
@@ -93,6 +146,15 @@ class Game:
     def update(self):
         # Actualizamos los sprites
         self.all_sprites.update()
+        
+        # Barajamos
+        if self.start_shuffle:
+            self.shuffle()
+            self.draw_tiles()
+            self.shuffle_time += 1
+            if self.shuffle_time > 120: # Como los FPS son 60, son 2 segundos.
+                self.start_shuffle = False
+
 
     def draw_grid(self):
         # Dibujamos la rejilla
@@ -161,7 +223,7 @@ class Game:
                         if button.text == "Reset":
                             self.new()
 
-            
+
 
 
 # Creamos una instancia del juego
